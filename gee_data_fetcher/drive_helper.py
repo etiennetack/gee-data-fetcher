@@ -5,7 +5,7 @@ from collections import namedtuple
 from pathlib import Path
 from typing import Optional, Generator
 
-from pydrive2.auth import GoogleAuth, RefreshError
+from pydrive2.auth import GoogleAuth, ServiceAccountCredentials
 from pydrive2.drive import GoogleDrive
 
 
@@ -26,29 +26,6 @@ class GoogleDriveHelper:
             scopes=["https://www.googleapis.com/auth/drive"],
         )
         self.drive = GoogleDrive(gauth)
-
-    def _authenticate(self, secret_file: Path, credentials_file: Path):
-        """Authenticate with Google Drive API."""
-        GoogleAuth.DEFAULT_SETTINGS["client_config_file"] = str(secret_file)
-        GoogleAuth.DEFAULT_SETTINGS["get_refresh_token"] = True
-        gauth = GoogleAuth()
-        gauth.LoadCredentialsFile(str(credentials_file))
-        if gauth.credentials is None:
-            print("No credentials found.")
-            gauth.LocalWebserverAuth()
-        elif gauth.access_token_expired:
-            print("Refreshing token...")
-            try:
-                gauth.Refresh()
-            except RefreshError:
-                # Remove credentials file and try again
-                credentials_file.unlink()
-                return self._authenticate(secret_file, credentials_file)
-        else:
-            print("Authorizing...")
-            gauth.Authorize()
-        gauth.SaveCredentialsFile(str(credentials_file))
-        return gauth
 
     def create_directory(self, title: str, parent: Optional[Item] = None):
         """Create a directory in Google Drive."""
