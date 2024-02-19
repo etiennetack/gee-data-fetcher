@@ -76,11 +76,15 @@ INDICE_FUNCTIONS: Dict[str, Callable[[ee.Image], ee.Image]] = {
         lambda image: image.expression(
             # https://foodsecurity-tep.net/node/210
             # "sqrt(((Red * Red) / (Green * Green)) / 2)",
+            #
             "sqrt(((RED * RED) + (NIR * NIR)))",
             {
-                "Red": image.select("B4"),
-                "Green": image.select("B8"),
+                "RED": image.select("B4"),
+                "NIR": image.select("B8"),
             },
+            # Source: Guide technico-méthodologique - Cartographie des formes
+            # érosives en Province Sud - Recherche méthodologique et tests
+            # préliminaires (Isabelle Rouet, OEIL et INSIGHT)
         ).rename("BI")
     ),
 }
