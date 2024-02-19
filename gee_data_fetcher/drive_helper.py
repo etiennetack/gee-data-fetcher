@@ -5,8 +5,8 @@ from collections import namedtuple
 from pathlib import Path
 from typing import Optional, Generator
 
-from pydrive.auth import GoogleAuth, RefreshError
-from pydrive.drive import GoogleDrive
+from pydrive2.auth import GoogleAuth, RefreshError
+from pydrive2.drive import GoogleDrive
 
 
 __all__ = ["GoogleDriveHelper"]
