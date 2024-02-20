@@ -5,7 +5,7 @@ from collections import namedtuple
 from pathlib import Path
 from typing import Optional, Generator
 
-from pydrive2.auth import GoogleAuth, ServiceAccountCredentials
+from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 
 
