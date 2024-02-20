@@ -20,11 +20,18 @@ class GoogleDriveHelper:
 
     def __init__(self, service_account_file: Path) -> None:
         """Initialize Google Drive API from service account."""
-        gauth = GoogleAuth()
-        gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name(
-            service_account_file.as_posix(),
-            scopes=["https://www.googleapis.com/auth/drive"],
+        # Authenticate using service account.
+        gauth = GoogleAuth(
+            settings={
+                "client_config_backend": "service",
+                "service_config": {
+                    "client_json_file_path": service_account_file.as_posix(),
+                },
+                "oauth_scope": ["https://www.googleapis.com/auth/drive"],
+            }
         )
+        # Authenticate and create the PyDrive client.
+        gauth.ServiceAuth()
         self.drive = GoogleDrive(gauth)
 
     def create_directory(self, title: str, parent: Optional[Item] = None):
