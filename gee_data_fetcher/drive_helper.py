@@ -4,9 +4,11 @@
 from collections import namedtuple
 from pathlib import Path
 from typing import Optional, Generator
+from time import sleep
 
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
+from pydrive2.files import ApiRequestError
 
 
 __all__ = ["GoogleDriveHelper"]
@@ -65,10 +67,17 @@ class GoogleDriveHelper:
         file_list = self.drive.ListFile({"q": q}).GetList()
         return (Item(file["id"], file["title"]) for file in file_list)
 
-    def download_file(self, item: Item, path: Path):
+    def download_file(self, item: Item, path: Path, retry: int = 3, delay: int = 30):
         """Download a file from Google Drive to destination."""
-        file = self.drive.CreateFile({"id": item.id})
-        file.GetContentFile(str(path))
+        try:
+            file = self.drive.CreateFile({"id": item.id})
+            file.GetContentFile(str(path))
+        except ApiRequestError as e:
+            if retry == 0:
+                raise e
+            else:
+                sleep(delay)
+                self.download_file(item, path, retry - 1, delay * 2)
 
     def upload_file(self, path: Path, title: str, parent: Optional[Item] = None):
         """Upload a file to Google Drive."""
