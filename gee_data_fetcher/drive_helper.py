@@ -72,7 +72,7 @@ class GoogleDriveHelper:
         try:
             file = self.drive.CreateFile({"id": item.id})
             file.GetContentFile(str(path))
-        except ApiRequestError as e:
+        except Exception as e:  # catch all exceptions
             if retry == 0:
                 raise e
             else:
