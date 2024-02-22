@@ -73,18 +73,21 @@ def export_to_drive(
 
 def run_task(
     task: ee.batch.Task,
-    sleep_time: int = 10,
+    update_time: int = 10,
+    delay_time: int = 30,
     max_retry: int = 10,
 ) -> None:
     """Run an Earth Engine task."""
-    task.start()
-
-    while task.status().get("state") not in ["COMPLETED", "FAILED"]:
-        time.sleep(sleep_time)
-
-    if task.status().get("state") == "FAILED":
+    try:
+        task.start()
+        while task.status().get("state") not in ["COMPLETED", "FAILED"]:
+            time.sleep(update_time)
+        if task.status().get("state") == "FAILED":
+            raise Exception("Task failed.")
+    except:  # catch all exceptions
         if max_retry > 0:
-            run_task(task, sleep_time, max_retry - 1)
+            time.sleep(delay_time)
+            run_task(task, update_time, delay_time * 2, max_retry - 1)
         else:
             raise RuntimeError(f"Task {task.status().get('description')} failed.")
 
