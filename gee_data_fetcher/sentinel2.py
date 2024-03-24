@@ -22,6 +22,18 @@ INDICE_FUNCTIONS: Dict[str, Callable[[ee.Image], ee.Image]] = {
         #
         .rename("NDVI")
     ),
+    "SAVI": (
+        # Soil Adjusted Vegetation Index
+        # https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/savi/
+        lambda image: image.expression(
+            "(NIR - RED) / (NIR + RED + L) * (1 + L) ",
+            {
+                "RED": image.select("B4"),
+                "NIR": image.select("B8"),
+                "L": 0.5,
+            },
+        ).rename("SAVI")
+    ),
     "NDWIv": (
         # Gao, Bo-Cai (1996)
         # => NDMI
@@ -72,11 +84,7 @@ INDICE_FUNCTIONS: Dict[str, Callable[[ee.Image], ee.Image]] = {
         .rename("NBR")
     ),
     "Brightness": (
-        # TODO À vérifier
         lambda image: image.expression(
-            # https://foodsecurity-tep.net/node/210
-            # "sqrt(((Red * Red) / (Green * Green)) / 2)",
-            #
             "sqrt(((RED * RED) + (NIR * NIR)))",
             {
                 "RED": image.select("B4"),
