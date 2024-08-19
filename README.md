@@ -50,7 +50,7 @@ pixi run cmd
 ## How to add a remote sensing indice?
 
 If you want to add a remote sensing indice, you can add a function inside the dictionary
-(`INDICE_FUNCTIONS`) located in the `sentinel2.py` file:
+(`INDICE_FUNCTIONS`) located in the [sentinel2.py](https://github.com/etiennetack/gee-data-fetcher/blob/main/gee_data_fetcher/sentinel2.py) file:
 
 ```python
 INDICE_FUNCTIONS: Dict[str, Callable[[ee.Image], ee.Image]] = {
