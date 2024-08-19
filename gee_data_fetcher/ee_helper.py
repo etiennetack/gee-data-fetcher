@@ -2,7 +2,7 @@
 import json
 import time
 from pathlib import Path
-from typing import Callable, Dict, Tuple, Iterable
+from typing import Callable, Dict, Iterable
 
 import ee
 import geopandas as gpd
@@ -36,11 +36,16 @@ def ee_init(credentials_file: Path) -> None:
     ee.Initialize(credentials)
 
 
-def resample(image: ee.Image, band: str, scale: int) -> ee.Image:
+def resample(
+    image: ee.Image,
+    band: str,
+    scale: int,
+    resample_fn: str = "bilinear",
+) -> ee.Image:
     """Resample a band to a given scale."""
     b = image.select(band)
     return (
-        b.resample("bilinear")
+        b.resample(resample_fn)
         .reproject(crs=b.projection().getInfo().get("crs"), scale=scale)
         .rename(f"{band}_{scale}m")
     )
@@ -84,7 +89,7 @@ def run_task(
             time.sleep(update_time)
         if task.status().get("state") == "FAILED":
             raise Exception("Task failed.")
-    except:  # catch all exceptions
+    except:  # noqa: E722 # catch all exceptions
         if max_retry > 0:
             time.sleep(delay_time)
             run_task(task, update_time, delay_time * 2, max_retry - 1)

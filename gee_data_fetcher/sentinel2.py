@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict
 import pendulum
 import geopandas as gpd
 import ee

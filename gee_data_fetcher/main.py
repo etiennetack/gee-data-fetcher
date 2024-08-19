@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 
-import ee
 import click
 import geopandas as gpd
 from tqdm import tqdm
@@ -53,6 +52,12 @@ from dates_functions import iter_periods
     is_flag=True,
     help="Export a band that counts the number of images for each pixel (excluding masked areas)",
 )
+@click.option(
+    "--aggr-fn",
+    type=str,
+    default="median",
+    help="The function used to aggretage every images",
+)
 def main(
     ee_credentials,
     aoi,
@@ -67,6 +72,7 @@ def main(
     output,
     cloud_score_threshold,
     count_band,
+    aggr_fn,
 ):
     """Download Sentinel-2 images from Google Earth Engine."""
     # Initialize Google Earth Engine
@@ -109,7 +115,14 @@ def main(
             continue
 
         # Compute median composite and clip to AOI
-        median_composite = ee_helper.clip_to_aoi(s2_images.median(), aoi)
+        composite = None
+        if aggr_fn == "median":
+            composite = s2_images.median()
+        elif aggr_fn == "mean":
+            composite = s2_images.mean()
+        else:
+            raise Exception(f"This aggregation function is not supported: {aggr_fn}")
+        composite = ee_helper.clip_to_aoi(composite, aoi)
 
         # Prepare images to export
         for n, bounds in enumerate(
@@ -127,7 +140,7 @@ def main(
             if indices:
                 for indice in indices.split(","):
                     name = f"{indice}_{period_start_str}_{period_end_str}{aoi_suffix}"
-                    image = ee_helper.apply_indice_function(median_composite, indice)
+                    image = ee_helper.apply_indice_function(composite, indice)
                     exports[name] = image
                     print(f"[+] {indice}")
 
@@ -135,7 +148,7 @@ def main(
             if bands:
                 for band in bands.split(","):
                     name = f"{band}_{period_start_str}_{period_end_str}{aoi_suffix}"
-                    image = sentinel2.get_band(median_composite, band)
+                    image = sentinel2.get_band(composite, band)
                     exports[name] = image
                     print(f"[+] {band}")
 
@@ -145,7 +158,7 @@ def main(
                 image = ee_helper.make_count_band(s2_images)
                 image = image.clip(ee_helper.shapely_bounds_to_ee_geometry(bounds))
                 exports[name] = image
-                print(f"[+] COUNT")
+                print("[+] COUNT")
 
     # Export images
     print("Exporting images...")
@@ -159,6 +172,8 @@ def main(
         for item in drive_helper.search(name):
             drive_helper.download_file(item, output / item.title)
             drive_helper.delete_file(item)
+
+        # TODO ajouter commande pour clean le compte drive associé
 
     # Clean google drive
     for item in drive_helper.search("GEE"):
