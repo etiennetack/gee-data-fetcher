@@ -3,6 +3,8 @@
 This script automate the process of retrieving spatial data from sentinel 2
 satellites using Google Earth Engine. All the computing is done on the GEE
 infrastructure, then images are brought back locally using the Google Drive API.
+This work is the result of a collaboration between [INSIGHT](https://insight.nc)
+and the University of New Caledonia through a PhD thesis.
 
 ## Environment and Python dependencies
 
